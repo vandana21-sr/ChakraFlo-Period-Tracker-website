@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChakraFlo - Calendar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #fff0f5;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Navbar Styling */
+    .cute-navbar {
+      background: #fde2e4;
+      border-bottom: 2px solid #f9c5d1;
+      box-shadow: 0 2px 8px rgba(249, 197, 209, 0.5);
+    }
+
+    .navbar-brand,
+    .nav-link {
+      color: #b65d80 !important;
+      font-weight: 600;
+    }
+
+    .nav-link:hover {
+      background-color: #f9d2e3;
+      border-radius: 10px;
+    }
+
+    .calendar-container {
+      padding: 30px;
+    }
+
+    .month-title {
+      text-align: center;
+      font-weight: bold;
+      color: #c94f7c;
+      margin: 20px 0 10px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 40px;
+    }
+
+    .day {
+      height: 80px;
+      background-color: #ffe9f2;
+      border-radius: 10px;
+      padding: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .period-day {
+      background-color: #ffc0cb !important;
+    }
+
+    .predicted-day {
+      background-color: #dab6f7 !important;
+    }
+
+    .note {
+      font-size: 10px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .mood {
+      font-size: 11px;
+      font-weight: bold;
+      color: #8a3e74;
+    }
+
+    .day:hover {
+      box-shadow: 0 0 5px #e9c9d2;
+    }
+
+    .modal textarea, .modal select {
+      width: 100%;
+    }
+
+    .logo-img {
+      width: 30px;
+      height: 30px;
+    }
+    .chakra-footer {
+    background-color: #fde2e4;
+    color: #6d3c5b;
+    font-family: 'Segoe UI', sans-serif;
+    border-top: 2px solid #f9c5d1;
+    box-shadow: 0 -2px 8px rgba(249, 197, 209, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light cute-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <span class="fw-bold">🩷 ChakraFlo</span>
+    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="update.html">Add Entry</a>
+          </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">Saved History</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="profile.html">Profile</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Calendar Section -->
+<div class="container calendar-container">
+  <h2 class="text-center mb-4">Yearly Calendar View</h2>
+  <div id="calendarYear"></div>
+</div>
+
+<!-- Mood & Notes Modal -->
+<div class="modal fade" id="dayModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Mood & Notes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="selectedDate"></p>
+        <label for="mood">Mood:</label>
+        <select id="mood" class="form-select mb-2">
+          <option value="">Select Mood</option>
+          <option value="Happy">😊 Happy</option>
+          <option value="Sad">😢 Sad</option>
+          <option value="Tired">😴 Tired</option>
+          <option value="Cramps">😖 Cramps</option>
+          <option value="Moody">😡 Moody</option>
+        </select>
+        <label for="note">Notes:</label>
+        <textarea id="note" rows="3" class="form-control"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="saveDayData()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const calendarEl = document.getElementById("calendarYear");
+  const modal = new bootstrap.Modal(document.getElementById('dayModal'));
+  const selectedDateEl = document.getElementById("selectedDate");
+  const moodEl = document.getElementById("mood");
+  const noteEl = document.getElementById("note");
+
+  const user = localStorage.getItem("loggedInUser") || "default";
+  const historyKey = `${user}-history`;
+  const notesKey = `${user}-notes`;
+
+  const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+  const notes = JSON.parse(localStorage.getItem(notesKey)) || {};
+
+  let selectedDayStr = "";
+
+  function getPeriodDates() {
+    const days = [];
+    history.forEach(entry => {
+      const start = new Date(entry.lastDate);
+      for (let i = 0; i < 5; i++) {
+        const date = new Date(start);
+        date.setDate(date.getDate() + i);
+        days.push(date.toISOString().slice(0,10));
+      }
+      if (entry.nextDate) {
+        const next = new Date(entry.nextDate);
+        for (let i = 0; i < 5; i++) {
+          const date = new Date(next);
+          date.setDate(date.getDate() + i);
+          days.push(date.toISOString().slice(0,10));
+        }
+      }
+    });
+    return days;
+  }
+
+  const allPeriodDates = getPeriodDates();
+
+  function renderCalendar(year) {
+    calendarEl.innerHTML = "";
+
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const monthDiv = document.createElement("div");
+      const title = document.createElement("h5");
+      title.className = "month-title";
+      title.textContent = date.toLocaleString('default', { month: 'long' });
+      monthDiv.appendChild(title);
+
+      const cal = document.createElement("div");
+      cal.className = "calendar";
+
+      const firstDay = date.getDay();
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        cal.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const fullDate = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dayEl = document.createElement("div");
+        dayEl.className = "day";
+
+        if (allPeriodDates.includes(fullDate)) {
+          const dateObj = new Date(fullDate);
+          const isFuture = dateObj > new Date();
+          dayEl.classList.add(isFuture ? "predicted-day" : "period-day");
+        }
+
+        dayEl.innerHTML = `<div><strong>${d}</strong></div>`;
+        if (notes[fullDate]) {
+          if (notes[fullDate].mood) {
+            dayEl.innerHTML += `<div class="mood">${notes[fullDate].mood}</div>`;
+          }
+          if (notes[fullDate].note) {
+            dayEl.innerHTML += `<div class="note">${notes[fullDate].note}</div>`;
+          }
+        }
+
+        dayEl.onclick = () => {
+          selectedDayStr = fullDate;
+          selectedDateEl.textContent = `Date: ${fullDate}`;
+          moodEl.value = notes[fullDate]?.mood || "";
+          noteEl.value = notes[fullDate]?.note || "";
+          modal.show();
+        };
+        cal.appendChild(dayEl);
+      }
+
+      monthDiv.appendChild(cal);
+      calendarEl.appendChild(monthDiv);
+    }
+  }
+
+  function saveDayData() {
+    const mood = moodEl.value;
+    const note = noteEl.value;
+    notes[selectedDayStr] = { mood, note };
+    localStorage.setItem(notesKey, JSON.stringify(notes));
+    renderCalendar(new Date().getFullYear());
+    modal.hide();
+  }
+
+  renderCalendar(new Date().getFullYear());
+</script>
+<!-- ChakraFlo Footer -->
+<footer class="text-center mt-5 py-4 chakra-footer">
+  <div class="container">
+    <p class="mb-1">🌸 Made with care by Vandana</p>
+    <p class="small mb-0">© 2025 ChakraFlo. All rights reserved.</p>
+  </div>
+</footer>
+
+</body>
+</html>

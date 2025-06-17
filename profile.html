@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChakraFlo - Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+     .chakra-footer {
+    background-color: #fde2e4;
+    color: #6d3c5b;
+    font-family: 'Segoe UI', sans-serif;
+    border-top: 2px solid #f9c5d1;
+    box-shadow: 0 -2px 8px rgba(249, 197, 209, 0.2);
+    }
+    body {
+      background-color: #fff0f5;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .cute-navbar {
+      background: #fde2e4;
+      border-bottom: 2px solid #f9c5d1;
+      box-shadow: 0 2px 8px rgba(249, 197, 209, 0.5);
+    }
+
+    .navbar-brand,
+    .nav-link {
+      color: #b65d80 !important;
+      font-weight: 600;
+    }
+
+    .nav-link:hover {
+      background-color: #f9d2e3;
+      border-radius: 10px;
+    }
+
+    .profile-container {
+      background-color: #fff7fb;
+      border: 2px dashed #f3a6c3;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(255, 192, 203, 0.3);
+      margin-top: 50px;
+    }
+
+    .logout-btn {
+      background-color: #fa709a;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    .logout-btn:hover {
+      background-color: #f65d89;
+    }
+
+    h2 {
+      color: #b65d80;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light cute-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <span class="fw-bold">🩷 ChakraFlo</span>
+    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="update.html">Update Info</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">History</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="calendar.html">Calendar</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container profile-container text-center">
+  <h2>Welcome, <span id="username">User</span>! 🌸</h2>
+  <p>📅 Logged in since: <span id="loginTime">--</span></p>
+  <p>🔐 Account Status: <strong>Active</strong></p>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<script>
+  const user = localStorage.getItem("loggedInUser");
+  const loginTime = localStorage.getItem("loginTime");
+
+  if (!user) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("username").textContent = user;
+  document.getElementById("loginTime").textContent = loginTime || "Just now";
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loginTime");
+    window.location.href = "login.html";
+  }
+</script>
+<footer class="text-center mt-5 py-4 chakra-footer">
+  <div class="container">
+    <p class="mb-1">🌸 Made with care by Vandana</p>
+    <p class="small mb-0">© 2025 ChakraFlo. All rights reserved.</p>
+  </div>
+</footer>
+</body>
+</html>
